@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 	usersdb "github.com/HunnTeRUS/bookstore_users-api/datasources/mysql/users_db"
+	"github.com/HunnTeRUS/bookstore_users-api/logger"
 	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 	"github.com/HunnTeRUS/bookstore_users-api/utils/mysql_utils"
 )
@@ -44,7 +45,8 @@ func (user *User) Save() *errors.RestErr {
 func (user *User) Get() *errors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryGetUser)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		logger.Error(err.Error(), err)
+		return errors.NewInternalServerError(errors.NewError("database error"))
 	}
 
 	defer stmt.Close()
