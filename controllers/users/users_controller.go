@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Bookstore-GolangMS/bookstore_oauth-go/oauth"
 	"github.com/HunnTeRUS/bookstore_users-api/domain/users"
-	"github.com/HunnTeRUS/bookstore_users-api/services"
+	users_services "github.com/HunnTeRUS/bookstore_users-api/services"
 	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 	"github.com/gin-gonic/gin"
 )
@@ -30,6 +31,20 @@ func CreateUser(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
+	if err := oauth.AuthenticateRequest(c.Request); err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+
+	if callerId := oauth.GetCallerId(c.Request); callerId == 0 {
+		err := errors.RestErr{
+			Code:    http.StatusUnauthorized,
+			Message: "resource not available",
+		}
+		c.JSON(err.Code, err)
+		return
+	}
+
 	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
 
 	if userErr != nil {
@@ -44,8 +59,12 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user.Marshal(c.GetHeader("X-Public") == "true"))
-	return
+	if oauth.GetCallerId(c.Request) == user.Id {
+		c.JSON(http.StatusOK, user.Marshal(false))
+		return
+	}
+
+	c.JSON(http.StatusOK, user.Marshal(oauth.IsPublic(c.Request)))
 }
 
 func UpdateUser(c *gin.Context) {
@@ -90,16 +109,24 @@ func DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]string{"status": "delete"})
 }
 
-func getUserID(c *gin.Context) (int64, *errors.RestErr){
-	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
-	if userErr != nil {
-		return 0, errors.NewBadRequestError(fmt.Sprintf("user id must be a number"))
+func Login(c *gin.Context) {
+	login_request := &users.LoginRequest{}
+	if err := c.ShouldBindJSON(&login_request); err != nil {
+		func_err := errors.NewBadRequestError("json body is malformatted")
+		c.JSON(func_err.Code, func_err)
+		return
 	}
 
-	return userId, nil
+	user, err := users_services.UsersService.LoginUser(*login_request)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, user.Marshal(c.GetHeader("X-Public") == "true"))
 }
 
-func Search(c *gin.Context){
+func Search(c *gin.Context) {
 	status := c.Query("status")
 
 	users, err := users_services.UsersService.Search(status)
@@ -110,4 +137,13 @@ func Search(c *gin.Context){
 	}
 
 	c.JSON(http.StatusOK, users.Marshal(c.GetHeader("X-Public") == "true"))
+}
+
+func getUserID(c *gin.Context) (int64, *errors.RestErr) {
+	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+	if userErr != nil {
+		return 0, errors.NewBadRequestError(fmt.Sprintf("user id must be a number"))
+	}
+
+	return userId, nil
 }

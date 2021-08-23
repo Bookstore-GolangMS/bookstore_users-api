@@ -21,6 +21,7 @@ type usersServiceInterface interface {
 	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
 	GetUser(int64) (*users.User, *errors.RestErr)
 	DeleteUser(int64) *errors.RestErr
+	LoginUser(users.LoginRequest) (*users.User, *errors.RestErr)
 }
 
 func (s *usersService) CreateUser(user users.User) (*users.User, *errors.RestErr) {
@@ -40,9 +41,26 @@ func (s *usersService) CreateUser(user users.User) (*users.User, *errors.RestErr
 	return &user, nil
 }
 
+func (s *usersService) LoginUser(login_request users.LoginRequest) (*users.User, *errors.RestErr) {
+	user := &users.User{
+		Email:    login_request.Email,
+		Password: crypto_utils.GetMd5(login_request.Password),
+	}
+
+	if err := user.Validate(); err != nil {
+		return nil, err
+	}
+
+	if err := user.FindByEmailAndPassword(); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (s *usersService) Search(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
-	return  dao.Search(status)
+	return dao.Search(status)
 }
 
 func (s *usersService) GetUser(userId int64) (*users.User, *errors.RestErr) {
