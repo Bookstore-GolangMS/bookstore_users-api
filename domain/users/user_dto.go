@@ -1,9 +1,8 @@
 package users
 
 import (
+	"github.com/Bookstore-GolangMS/bookstore_utils-go/errors"
 	"strings"
-
-	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 )
 
 const (

@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/Bookstore-GolangMS/bookstore_oauth-go/oauth"
+	"github.com/Bookstore-GolangMS/bookstore_utils-go/errors"
 	"github.com/HunnTeRUS/bookstore_users-api/domain/users"
 	users_services "github.com/HunnTeRUS/bookstore_users-api/services"
-	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 	"github.com/gin-gonic/gin"
 )
 

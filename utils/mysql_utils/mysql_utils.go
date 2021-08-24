@@ -1,9 +1,9 @@
 package mysql_utils
 
 import (
+	"github.com/Bookstore-GolangMS/bookstore_utils-go/errors"
 	"strings"
 
-	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -19,7 +19,7 @@ func ParseError(err error) *errors.RestErr {
 			return errors.NewNotFoundError("no record matching given id")
 		}
 
-		return errors.NewInternalServerError("error parsing database response")
+		return errors.NewInternalServerError("error parsing database response", err)
 	}
 
 	switch sqlErr.Number {
@@ -27,5 +27,5 @@ func ParseError(err error) *errors.RestErr {
 		return errors.NewBadRequestError("invalid data")
 	}
 
-	return errors.NewInternalServerError("error processing request")
+	return errors.NewInternalServerError("error processing request", err)
 }

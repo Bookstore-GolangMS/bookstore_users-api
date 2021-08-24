@@ -2,11 +2,11 @@ package users
 
 import (
 	"fmt"
+	"github.com/Bookstore-GolangMS/bookstore_utils-go/errors"
 	"strings"
 
 	usersdb "github.com/HunnTeRUS/bookstore_users-api/datasources/mysql/users_db"
 	"github.com/HunnTeRUS/bookstore_users-api/logger"
-	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 	"github.com/HunnTeRUS/bookstore_users-api/utils/mysql_utils"
 )
 
@@ -23,7 +23,7 @@ func (user *User) Save() *errors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryInsertUser)
 	if err != nil {
 		logger.Error("Error trying to prepare insert statement", err)
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError(err.Error(), err)
 	}
 
 	defer stmt.Close()
@@ -40,7 +40,7 @@ func (user *User) Save() *errors.RestErr {
 	if err != nil {
 		logger.Error("Error trying to get last inserted id", err)
 		return errors.NewInternalServerError(
-			fmt.Sprintf("error when trying to get last inserted id: %s", err.Error()))
+			fmt.Sprintf("error when trying to get last inserted id: %s", err.Error()), err)
 	}
 
 	user.Id = userId
@@ -52,7 +52,7 @@ func (user *User) Get() *errors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryGetUser)
 	if err != nil {
 		logger.Error("Error trying to prepare insert statement", err)
-		return errors.NewInternalServerError("database error")
+		return errors.NewInternalServerError("database error", err)
 	}
 
 	defer stmt.Close()
@@ -71,7 +71,7 @@ func (user *User) FindByEmailAndPassword() *errors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryFindUserByEmailAndPassword)
 	if err != nil {
 		logger.Error("Error trying to prepare get user by email and password statement", err)
-		return errors.NewInternalServerError("database error")
+		return errors.NewInternalServerError("database error", err)
 	}
 
 	defer stmt.Close()
@@ -94,7 +94,7 @@ func (user *User) Update() *errors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryUpdateUser)
 	if err != nil {
 		logger.Error("Error trying to prepare update statement", err)
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError(err.Error(), err)
 	}
 
 	defer stmt.Close()
@@ -112,7 +112,7 @@ func (user *User) Delete() *errors.RestErr {
 	stmt, err := usersdb.Client.Prepare(queryDeleteUser)
 	if err != nil {
 		logger.Error("Error trying to prepare delete statement", err)
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError(err.Error(), err)
 	}
 
 	defer stmt.Close()
@@ -130,14 +130,14 @@ func (user *User) Search(status string) ([]User, *errors.RestErr) {
 	stmt, err := usersdb.Client.Prepare(queryFindUserByStatus)
 	if err != nil {
 		logger.Error("Error trying to prepare search statement", err)
-		return nil, errors.NewInternalServerError(err.Error())
+		return nil, errors.NewInternalServerError(err.Error(), err)
 	}
 	defer stmt.Close()
 
 	rows, err := usersdb.Client.Query(status)
 	if err != nil {
 		logger.Error("Error trying to search user in database based on status", err)
-		return nil, errors.NewInternalServerError(err.Error())
+		return nil, errors.NewInternalServerError(err.Error(), err)
 	}
 	defer rows.Close()
 
@@ -147,7 +147,7 @@ func (user *User) Search(status string) ([]User, *errors.RestErr) {
 		if err := rows.Scan(&user.Id, &user.FirstName,
 			&user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
 			logger.Error("Error trying to scan result from database", err)
-			return nil, errors.NewInternalServerError(err.Error())
+			return nil, errors.NewInternalServerError(err.Error(), err)
 		}
 		results = append(results, user)
 	}

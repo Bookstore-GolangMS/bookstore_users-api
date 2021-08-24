@@ -1,8 +1,8 @@
 package interfaces
 
 import (
+	"github.com/Bookstore-GolangMS/bookstore_utils-go/errors"
 	"github.com/HunnTeRUS/bookstore_users-api/domain/users"
-	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 )
 
 type User interface {

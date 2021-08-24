@@ -1,10 +1,10 @@
 package users_services
 
 import (
+	"github.com/Bookstore-GolangMS/bookstore_utils-go/errors"
 	"github.com/HunnTeRUS/bookstore_users-api/domain/users"
 	"github.com/HunnTeRUS/bookstore_users-api/utils/crypto_utils"
 	dateutils "github.com/HunnTeRUS/bookstore_users-api/utils/date_utils"
-	"github.com/HunnTeRUS/bookstore_users-api/utils/errors"
 )
 
 type usersService struct {
